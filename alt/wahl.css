@@ -1,0 +1,23 @@
+h1 {
+	font-weight: bold;
+	color: black;
+	text-align: center;
+}
+
+p1, p2, p3 {
+	display: block;
+	max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+	background-color: #4CBB17;
+	border: 1px solid #0F4D0F;
+	padding: 20px
+}
+
+a {
+	display: block;
+    width: 100%;
+    padding: 12px;
+	color: #ffffff;
+	background-color: #008000
+}
