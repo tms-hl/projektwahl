@@ -3,7 +3,6 @@ class Kategorie:
         self.nummer = nummer
         self.name = name
     
-           
 class Raum:
     def __init__(self, raumnummer, raumname):
         self.raumnummer = raumnummer
@@ -20,9 +19,17 @@ class Person:
 class Schueler(Person):
     def __init__(self, klasse, wahl):
         self.klasse = klasse
-        self.klasse = wahl
-        
+        self.wahl = wahl
+
+class Projekt:
+    def __init__(self):
+        self.name = None
+        self.beschreibung = None
+        self.plaetze_min = None
+        self.plaetze_max = None
+        self.klasse_min = None
+        self.klasse_max = None
+        self.raum = None
        
 class Organisator(Person):
    pass
-r = Raum("123", "Gruppenraum")
