@@ -92,23 +92,62 @@ class Db:
             Author:
             Max, Bendix
         '''
+        with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
+            query = "SELECT * FROM projekt"
+            cursor.execute(query)
+            result = cursor.fetchall()
+            
+            projects = []
+            for row in result:
+                p = Projekt()
+                p.pid = row ['pid']
+                p.name = row ['name']
+                p.beschreibung = row['beschreibung']
+                p.plaetze_min = row['plätze_min']
+                p.plaetze_max = row['plätze_max']
+                p.klasse_min = row['klasse_min']
+                p.klasse_max = row['klasse_max']
+                projects.append(p)
+                
+        return projects
     
-    def get_choice(self, uid)
+    def get_choice(self, uid):
         '''
             Gibt die drei Projekte zurück, die der Benutzer gewählt hat
             
             Author:
             Louis
         '''
-
+        with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
+            query = "SELECT * FROM wählt WHERE uid = %s"
+            cursor.execute(query, [uid])
+            result = cursor.fetchall()
+               
+            return result
+        
     def get_user(self, uid):
         '''
             Gibt den Schüler mit der ID uid zurück
             
             Author:
-            Mats
+            Louis
         '''
-        pass
+        with self.get_cursor() as cursor:
+            query = "SELECT * FROM `user` WHERE uid = %s"
+            cursor.execute(query, [uid])
+            result = cursor.fetchall()
+
+            if result is None:
+                return None
+            else:
+                u = Person(
+                    result[0]['email'],
+                    result[0]['firstname'],
+                    result[0]['lastname']
+                )
+
+                return u
+                
     
     def get_rooms(self):
         '''
