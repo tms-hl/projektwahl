@@ -1,11 +1,6 @@
 import mysql.connector
 from mysql.connector import pooling
 from contextlib import contextmanager
-
-class Kategorie:
-    def __init__(self, nummer, name):
-        self.nummer = nummer
-        self.name = name
     
 class Raum:
     def __init__(self, raumnummer, raumname):
@@ -23,7 +18,6 @@ class Person:
 class Schueler(Person):
     def __init__(self, klasse, wahl):
         self.klasse = klasse
-        self.wahl = wahl
 
 class Projekt:
     def __init__(self):
@@ -33,7 +27,10 @@ class Projekt:
         self.plaetze_max = None
         self.klasse_min = None
         self.klasse_max = None
+        
         self.raum = None
+        self.organisatoren = []
+        self.mitglieder = []
        
 class Organisator(Person):
    pass
@@ -66,7 +63,7 @@ class Db:
         return self.pool.get_connection()
     
     def get_project(self, pid):
-        p = Projekt()
+        
         with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
             query = "SELECT * FROM projekt WHERE pid = %s"
             cursor.execute(query, [pid])
@@ -74,6 +71,7 @@ class Db:
             if len(result) == 0:
                 return None
             else:
+                p = Projekt()
                 p.name = result[0]['name']
                 p.beschreibung = result[0]['beschreibung']
                 p.plaetze_min = result[0]['plätze_min']
@@ -81,4 +79,58 @@ class Db:
                 p.klasse_min = result[0]['klasse_min']
                 p.klasse_max = result[0]['klasse_max']
                 
+                # TODO: Raum mit hinzufügen
+                # TODO: Orginator(en) hinzufügen
+                # TODO: Teilnehmer hinzufügen
+                
                 return p
+
+    def get_projects(self):
+        '''
+            Gibt alle Projekte zurück
+            
+            Author:
+            Max, Bendix
+        '''
+    
+    def get_choice(self, uid)
+        '''
+            Gibt die drei Projekte zurück, die der Benutzer gewählt hat
+            
+            Author:
+            Louis
+        '''
+
+    def get_user(self, uid):
+        '''
+            Gibt den Schüler mit der ID uid zurück
+            
+            Author:
+            Mats
+        '''
+        pass
+    
+    def get_rooms(self):
+        '''
+            Gibt eine Liste mit allen Räumen zurück
+            
+            Author:
+            Louis
+        '''
+        pass
+    
+    def add_project(self, p):
+        '''
+            Erstellt ein neues Projekt
+            
+            Author:
+            Mats, Louis
+        '''
+        
+    def add_choice(self, uid, pid1, pid2, pid3):
+        '''
+            Erstellt eine neue Wahl
+            
+            Author:
+            Max, Bendix
+        '''
