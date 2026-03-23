@@ -93,7 +93,7 @@ class Db:
             Max, Bendix
         '''
     
-    def get_choice(self, uid)
+    def get_choice(self, uid):
         '''
             Gibt die drei Projekte zurück, die der Benutzer gewählt hat
             
@@ -102,13 +102,22 @@ class Db:
         '''
 
     def get_user(self, uid):
-        '''
-            Gibt den Schüler mit der ID uid zurück
-            
-            Author:
-            Mats
-        '''
-        pass
+        with self.get_cursor() as cursor:
+            query = "SELECT * FROM `user` WHERE uid = %s"
+            cursor.execute(query, [uid])
+            result = cursor.fetchone()
+
+            if result is None:
+                return None
+            else:
+                u = Person(
+                result['email'],
+                result['vorname'],
+                result['nachname']
+                )
+
+        return u
+                
     
     def get_rooms(self):
         '''

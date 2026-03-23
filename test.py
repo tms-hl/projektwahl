@@ -1,9 +1,9 @@
 import model
 db = model.Db("intern.tms-hl.org", "if_01", "if_01", "if_01")
-project = db.get_project(2)
-print(project)
+Person = db.get_user(2)
+print(user)
 
-if project is None:
+if user is None:
     print("Projekt nicht gefunden!")
 else:
-    print(project.name)
+    print(user.name)
