@@ -1,9 +1,5 @@
 import model
 db = model.Db("intern.tms-hl.org", "if_01", "if_01", "if_01")
-project = db.get_project(2)
-print(project)
+choice = db.get_choice(5)
+print(choice)
 
-if project is None:
-    print("Projekt nicht gefunden!")
-else:
-    print(project.name)

@@ -93,7 +93,13 @@ class Db:
             Max, Bendix
         '''
     
-    def get_choice(self, uid)
+    def get_choice(self, uid):
+        with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
+            query = "SELECT * FROM wählt WHERE uid = %s"
+            cursor.execute(query, [uid])
+            result = cursor.fetchall()
+               
+            return result
         '''
             Gibt die drei Projekte zurück, die der Benutzer gewählt hat
             
