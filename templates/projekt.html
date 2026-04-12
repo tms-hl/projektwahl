@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>{{p.name}}</h1>
+<p><strong>Klasse:</strong> {{p.klasse_min}} bis {{p.klasse_max}}</p>
+<p><strong>verantwortlich:</strong> Manfred Mustermann</p>
+<p>{{p.beschreibung}}</p>
+<br>
+<p><a href="/">zurück zur Projektübersicht</a></p>
+{% endblock %}

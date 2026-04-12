@@ -1,44 +1,38 @@
-<html>
-<head>
-	<meta charset="utf-8">
-	<title>Liste</title>
-	<link type = "text/css" rel="stylesheet" href = "{{url_for('static', filename = 'style.css')}}">
-</head>
-<body>
-	<header>
-		<h1>Projektliste</h1>
-		
-	</header>
-	<main>
-		<table border=1>
-			<tr>
-				<th>Eine Übersicht von allen Projekten:</th>
-				<th style="text-align: center;">Lehrkraft</th>
-				<th style="text-align: center;">1. Wahl</th>
-				<th style="text-align: center;">2. Wahl</th>
-				<th style="text-align: center;">3. Wahl</th>
-				<th style="text-align: center;">Favoriten</th>
-			</tr>
-			<tr>
-				<th>Informatik Klasse 7-13  <p>Beschreibung</p></th>
-				<th style="text-align: center;">Herr</th>
-				<th style="text-align: center;"><button>1.Wahl</button></th>
-				<th style="text-align: center;"><button>2.Wahl</button></th>
-				<th style="text-align: center;"><button>3.Wahl</button></th>
-				<th style="text-align: center;"><button>Favorit</button></th>
-			</tr>
-			<tr>
-				<th>chemie <p>Beschreibung</p></th>
-				<th style="text-align: center;">Frau</th>
-				<th style="text-align: center;"><button>1.Wahl</button></th>
-				<th style="text-align: center;"><button>2.Wahl</button></th>
-				<th style="text-align: center;"><button>3.Wahl</button></th>
-				<th style="text-align: center;"><button>Favorit</button></th>
-			</tr>
-		</table>
-	
-<a class="Link" href="neu.html"><button>Hinzufügen</button></a>
-<a class="Link" href=""><button>Favoriten anzeigen</button></a>
-</main>
-</body>
-</html>
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Projektübersicht</h1>
+
+<form action="wahl.html" method="post">
+    <table border=1>
+        <tr>
+            <th>Projekt</th>
+            <th>Klassen</th>
+            <th>1. Wahl</th>
+            <th>2. Wahl</th>
+            <th>3. Wahl</th>
+        </tr>
+        {% for p in liste %}
+            <tr>
+                <td><a href="projekt.html?pid={{p.pid}}">{{p.name}}</a></td>
+                <td>{{p.klasse_min}}-{{p.klasse_max}}</td>
+                <td><input type="radio" name="wahl1" value="pid-{{p.pid}}"></td>
+                <td><input type="radio" name="wahl2" value="pid-{{p.pid}}"></td>
+                <td><input type="radio" name="wahl3" value="pid-{{p.pid}}"></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <div class="wahl">
+        <h2>Deine Auswahl:</h2>
+        <ol>
+            <li>Wahl 1</li>
+            <li>Wahl 2</li>
+            <li>Wahl 3</li>
+        </ol>
+        <input type="submit" value="wählen">
+    </div>
+</form>
+
+<script type="text/javascript" src="{{url_for('static', filename = 'wahl.js')}}"></script>
+{% endblock %}
