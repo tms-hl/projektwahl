@@ -9,11 +9,11 @@ class Raum:
     
             
 class Person:
-    def __init__(self, email, vorname, nachname):
+    def __init__(self, uid, email, vorname, nachname):
+        self.uid = uid
         self.email = email
         self.vorname = vorname
         self.nachname = nachname
-        
 
 class Schueler(Person):
     def __init__(self, klasse, wahl):
@@ -21,6 +21,7 @@ class Schueler(Person):
 
 class Projekt:
     def __init__(self):
+        self.pid = None
         self.name = None
         self.beschreibung = None
         self.plaetze_min = None
@@ -41,7 +42,7 @@ class Wahl:
         self.projects = []
         
 class Db:
-    def __init__(self, host, user, password, database, pool_size=5):
+    def __init__(self, host, database, user, password, pool_size=5):
         # Initialisierung des Verbindungs-Pools
         self.pool = mysql.connector.pooling.MySQLConnectionPool(
             pool_name="mypool",
@@ -77,6 +78,7 @@ class Db:
                 return None
             else:
                 p = Projekt()
+                p.pid = result[0]['pid']
                 p.name = result[0]['name']
                 p.beschreibung = result[0]['beschreibung']
                 p.plaetze_min = result[0]['plätze_min']
@@ -148,6 +150,7 @@ class Db:
                 return None
             else:
                 u = Person(
+                    result[0]['uid'],
                     result[0]['email'],
                     result[0]['firstname'],
                     result[0]['lastname']

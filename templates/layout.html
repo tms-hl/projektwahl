@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Projektwahl</title>
+        <link type = "text/css" rel="stylesheet" href="{{url_for('static', filename = 'style.css')}}">
+        {% block head_extra %}{% endblock %}
+    </head>
+    <body>
+        <header>
+            <img src="{{url_for('static', filename = 'logo.png')}}" width="250" height="66">
+            <h1>Projektwoche 2026</h1>
+        </header>
+        <nav>
+            <a href="/index.html">Projektübersicht</a>
+            <a href="/neu.html">neues Projekt</a>
+            <a href="/wahl.html">meine Wahl</a>
+        </nav>
+        {% block content %}
+        {% endblock %}
+        
+        <footer>Ein Projekt des Informatikkurses E und Q1 der TMS</footer>
+    </body>
+</html>
