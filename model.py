@@ -131,7 +131,6 @@ class Db:
             result = cursor.fetchall()
             
             w = Wahl()
-            w.user = 
             return result
         
     def get_user(self, uid):
