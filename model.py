@@ -35,6 +35,11 @@ class Projekt:
 class Organisator(Person):
    pass
 
+class Wahl:
+    def __init__(self):
+        self.user = None
+        self.projects = []
+        
 class Db:
     def __init__(self, host, user, password, database, pool_size=5):
         # Initialisierung des Verbindungs-Pools
@@ -116,13 +121,15 @@ class Db:
             Gibt die drei Projekte zurück, die der Benutzer gewählt hat
             
             Author:
-            Louis
+            Mats
         '''
         with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
-            query = "SELECT * FROM wählt WHERE uid = %s"
+            query = "SELECT * JOIN FROM wählt WHERE uid = %s"
             cursor.execute(query, [uid])
             result = cursor.fetchall()
-               
+            
+            w = Wahl()
+            w.user = 
             return result
         
     def get_user(self, uid):
