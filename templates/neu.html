@@ -8,42 +8,50 @@
 
 <h1>Projekt erstellen</h1>
 
-<form method="post" action="projektneu.html">
+<form method="post" action="{{ url_for('projektneu') }}">
     <p>
         <label for="name">Name: </label>
-        <input type="text" name="name" value="" size="30" maxlength="50" placeholder="Name">
+        <input type="text" name="name" value="" size="30" maxlength="50" placeholder="Name" required>
     </p>
     <p>
         <label for="klasse_min">ab Klasse: <small>Gib nur Zahlen ein (E=11, Q1=12, Q2=13)</small></label>
-        <input type="number" name="klasse_min" value="5" size="30" maxlength="50" placeholder="ab Klasse">
+        <input type="number" name="klasse_min" value="5" size="30" maxlength="50" placeholder="ab Klasse" required>
     </p>
     <p>
         <label for="klasse_max">bis Klasse: <small>Gib nur Zahlen ein (E=11, Q1=12, Q2=13)</small></label>
-        <input type="number" name="klasse_max" value="13" size="30" maxlength="50" placeholder="bis Klasse">
+        <input type="number" name="klasse_max" value="13" size="30" maxlength="50" placeholder="bis Klasse" required>
     </p>
     <p>
-        <label for="lehrkraft">verantworlich: </label>
-        <select name="lehrkraft" id="cars" multiple>
-          <option value="volvo">Volvo</option>
-          <option value="saab">Saab</option>
-          <option value="opel">Opel</option>
-          <option value="audi">Audi</option>
+        <label for="organisatoren">verantworlich: </label>
+        <select id="organisatoren-multi-select" name="organisatoren[]" multiple data-multi-select>
+            {% for u in users %}
+                <option value="{{u.uid}}">{{u.vorname}} {{u.nachname}}</option>
+            {% endfor %}
         </select>
     </p>
     <p>
         <label for="plaetze_min">min. Teilnehmerinnen/Teilnehmer: </label>
-        <input type="number" name="plaetze_min" value="5" size="30" maxlength="50" placeholder="min. Teilnehmerinnen/Teilnehmer">
+        <input type="number" name="plaetze_min" value="5" size="30" maxlength="50" placeholder="min. Teilnehmerinnen/Teilnehmer" required>
     </p>
     <p>
         <label for="plaetze_max">max. Teilnehmerinnen/Teilnehmer: </label>
-        <input type="number" name="plaetze_max" value="30" size="30" maxlength="50" placeholder="max. Teilnehmerinnen/Teilnehmer">
+        <input type="number" name="plaetze_max" value="30" size="30" maxlength="50" placeholder="max. Teilnehmerinnen/Teilnehmer" required>
     </p>
     <p>
         <label for="beschreibung">Projektbeschreibung: </label>
-        <textarea name="beschreibung" rows="20" placeholder="Projektbeschreibung"></textarea>
+        <textarea name="beschreibung" rows="20" placeholder="Projektbeschreibung" required></textarea>
     </p>
 		  
     <input type="submit">
 </form>
 
+<script src="https://cdn.jsdelivr.net/npm/multi-select-dropdown-js/MultiSelect.min.js"></script>
+<script>
+    new MultiSelect("#organisatoren-multi-select", {
+        placeholder: "Organisatorinnen und Organisatoren",
+        min: 1,
+        selectAll: false,
+        required: true
+    });
+</script>
 {% endblock %}

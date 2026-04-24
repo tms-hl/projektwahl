@@ -15,6 +15,10 @@ header {
     border-bottom: 3px solid #73bc7e;
 }
 
+header span {
+    margin-left: auto;
+}
+
 strong {
     font-weight: bold;
 }
@@ -86,6 +90,11 @@ input[type="submit"] {
     background-color: #73bc7e;
     border: 0;
     cursor: pointer;
+}
+
+input[type="submit"]:disabled {
+    background-color: gray;
+    cursor: not-allowed;
 }
 
 footer {

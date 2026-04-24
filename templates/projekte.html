@@ -4,7 +4,7 @@
 
 <h1>Projektübersicht</h1>
 
-<form action="wahl.html" method="post">
+<form action="{{ url_for('wahl') }}" method="post">
     <table border=1>
         <tr>
             <th>Projekt</th>
@@ -15,7 +15,7 @@
         </tr>
         {% for p in liste %}
             <tr>
-                <td><a href="projekt.html?pid={{p.pid}}">{{p.name}}</a></td>
+                <td><a href="{{ url_for('projekt', pid=p.pid) }}">{{p.name}}</a></td>
                 <td>{{p.klasse_min}}-{{p.klasse_max}}</td>
                 <td><input type="radio" name="wahl1" value="pid-{{p.pid}}"></td>
                 <td><input type="radio" name="wahl2" value="pid-{{p.pid}}"></td>
@@ -30,7 +30,8 @@
             <li>Wahl 2</li>
             <li>Wahl 3</li>
         </ol>
-        <input type="submit" value="wählen">
+        <input type="submit" value="wählen" disabled>
+        <p><small>Die Projektwahl ist zum gegenwärtigen Zeitpunkt nicht möglich.</small></p>
     </div>
 </form>
 
