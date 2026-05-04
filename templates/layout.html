@@ -11,11 +11,15 @@
         <header>
             <img src="{{url_for('static', filename = 'logo.png')}}" width="250" height="66">
             <h1>Projektwoche 2026</h1>
+            <span>{{ current_user.vorname }} {{ current_user.nachname }}</span>
         </header>
         <nav>
-            <a href="/index.html">Projektübersicht</a>
-            <a href="/neu.html">neues Projekt</a>
-            <a href="/wahl.html">meine Wahl</a>
+            <a href="{{ url_for('projekte') }}">Projektübersicht</a>
+            {% if is_organisator %}
+                <a href="{{ url_for('neu') }}">neues Projekt</a>
+            {% else %}
+                <a href="{{ url_for('wahl') }}">meine Wahl</a>
+            {% endif %}
         </nav>
         {% block content %}
         {% endblock %}

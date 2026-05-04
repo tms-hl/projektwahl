@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>Projekt hinzugefügt</h1>
+<p>Ihr Projekt wurde erfolgreich hinzugefügt.</p>
+<p><a href="{{ url_for('projekt', pid=pid) }}">Projekt anzeigen</a></p>
+<p><a href="/">zurück zur Startseite</a></p>
+
+{% endblock %}
