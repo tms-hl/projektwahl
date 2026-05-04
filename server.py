@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 # Funktionen
 def get_current_user():
-    u = model.Schueler(3, "max.mustermann@tms-hl.org", "Max", "Mustermann")
+    u = model.Person(1, "max.mustermann@tms-hl.org", "Max", "Mustermann")
     return u
 
 # Anfragen bearbeiten
@@ -37,7 +37,18 @@ def projekt():
 @app.get("/wahl.html")
 @app.post("/wahl.html")
 def wahl():
-   return render_template('wahl.html')
+    uid = get_current_user().uid
+    
+    if request.form.get("wahl1") is not None: 
+        pid1 = int(request.form.get("wahl1"))
+        pid2 = int(request.form.get("wahl2"))
+        pid3 = int(request.form.get("wahl3"))
+    
+        db.add_choice(uid, pid1, pid2, pid3)
+    
+    return render_template('wahl.html')
+
+query = "SELECT name FROM projekt WHERE pId = %s"
 
 @app.get("/neu.html")
 def neu():

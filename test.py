@@ -1,25 +1,13 @@
 import model
 db = model.Db("intern.tms-hl.org", "if_01", "if_01", "if_01")
 
-project = db.get_project(2)
+p = model.Projekt()
+p.name = "Test1"
+p.beschreibung = "Test 1 Beschreibung"
+p.plaetze_min = 1
+p.plaetze_max = 100
+p.klasse_min = 4
+p.klasse_max = 7
 
-if project is None:
-    print("Projekt nicht gefunden!")
-else:
-    print(project.name)
-    
-user = db.get_user(5)
-if user is None:
-    print("Benutzer nicht gefunden!")
-else:
-    print(user.nachname, user.vorname)
-
-projects = db.get_projects()
-for p in projects:
-    print(p.name)
-    
-c = db.get_choice(5)
-print(c)
-
-choice = db.get_choice(5)
-print(choice)
+db.add_project(p)
+print("ok")

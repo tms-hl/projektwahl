@@ -57,6 +57,7 @@ class Db:
     def get_cursor(self):
         """Erstellt einen Cursor für den Kontext-Manager"""
         conn = self.get_connection()
+        conn.autocommit = True
         cursor = conn.cursor(dictionary=True)
         try:
             yield cursor
@@ -126,9 +127,11 @@ class Db:
             Mats
         '''
         with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
-            query = "SELECT * JOIN FROM wählt WHERE uid = %s"
+            query = "SELECT wählt.pid, name FROM wählt JOIN projekt on wählt.pId = projekt.pid WHERE uid = %s;" 
             cursor.execute(query, [uid])
             result = cursor.fetchall()
+            
+            
             
             w = Wahl()
             return result
@@ -174,7 +177,16 @@ class Db:
             Author:
             Mats, Louis
         '''
-        
+
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        query = "INSERT INTO projekt (name, beschreibung, plätze_min, plätze_max, klasse_min, klasse_max, raumkürzel) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        cursor.execute(query, [p.name, p.beschreibung, p.plaetze_min, p.plaetze_max, p.klasse_min, p.klasse_max, "TU1"])
+        conn.commit()
+
+        return cursor.lastrowid
+
+    
     def add_choice(self, uid, pid1, pid2, pid3):
         '''
             Erstellt eine neue Wahl
@@ -182,3 +194,10 @@ class Db:
             Author:
             Max, Bendix
         '''
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        query = "INSERT INTO wählt (uid, pid) VALUES (%s, %s)"
+        cursor.execute(query, [uid, pid1])
+        cursor.execute(query, [uid, pid2])
+        cursor.execute(query, [uid, pid3])
+        conn.commit()
