@@ -58,7 +58,18 @@ def projekt():
 @app.post("/wahl.html")
 @login_required
 def wahl():
-   return render_template('wahl.html')
+    uid = get_current_user().uid
+    
+    if request.form.get("wahl1") is not None: 
+        pid1 = int(request.form.get("wahl1"))
+        pid2 = int(request.form.get("wahl2"))
+        pid3 = int(request.form.get("wahl3"))
+    
+        db.add_choice(uid, pid1, pid2, pid3)
+    
+    return render_template('wahl.html')
+
+query = "SELECT name FROM projekt WHERE pId = %s"
 
 @app.get("/neu.html")
 @login_required

@@ -57,7 +57,8 @@ class Db:
     @contextmanager
     def get_cursor(self):
         """Erstellt einen Cursor für den Kontext-Manager"""
-        conn = self.pool.get_connection()
+        conn = self.get_connection()
+        conn.autocommit = True
         cursor = conn.cursor(dictionary=True)
         try:
             yield cursor
@@ -267,9 +268,10 @@ class Db:
             Author:
             Max, Bendix
         '''
-        with self.get_connection() as conn:
-            with conn.cursor() as cursor:
-                for pid in (pid1, pid2, pid3):
-                    query = "INSERT INTO wählt (uid, pid) VALUES (%s, %s)"
-                    cursor.execute(query, [uid, pid])
-                conn.commit()
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        query = "INSERT INTO wählt (uid, pid) VALUES (%s, %s)"
+        cursor.execute(query, [uid, pid1])
+        cursor.execute(query, [uid, pid2])
+        cursor.execute(query, [uid, pid3])
+        conn.commit()
