@@ -1,16 +1,18 @@
 from functools import wraps
 from flask import g, session, request, redirect, url_for
 from flask import current_app as app
-from model import Organisator
+from model import Organisator, Schueler
 
 def is_logged_in():
     return "uid" in session
 
 def is_organisator():
-    return False if not "user" in g else isinstance(g.user, Organisator)
+    user = get_current_user()
+    return user is not None and isinstance(user, Organisator)
 
 def is_schueler():
-    return False if not "user" in g else isinstance(g.user, Schueler)
+    user = get_current_user()
+    return user is not None and isinstance(user, Schueler)
     
 def get_current_user():
     if not is_logged_in():

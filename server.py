@@ -2,7 +2,7 @@ import yaml
 import model
 from usertools import *
 
-from flask import Flask
+from flask import Flask, Blueprint, url_for
 from flask import g, request, redirect, render_template
 from authlib.integrations.flask_client import OAuth
 
@@ -26,6 +26,7 @@ provider = oauth.register(
 # App einrichten
 app = Flask(__name__)
 app.config['APPLICATION_ROOT'] = '/'
+app.config['PREFERRED_URL_SCHEME'] = "https"
 app.secret_key = config['secret_key']
 
 @app.context_processor
@@ -82,7 +83,7 @@ def projektneu():
     p.klasse_min = int(request.form['klasse_min'])
     p.klasse_max = int(request.form['klasse_max'])
     
-    p.organisatoren = [int(uid) for uid in request.form.getlist('organisatoren[]')]
+    p.organisatoren = [model.Person(int(uid)) for uid in request.form.getlist('organisatoren[]')]
     
     pid = db.add_project(p)
     return render_template('projektneu.html', pid=pid)

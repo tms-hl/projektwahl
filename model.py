@@ -167,7 +167,7 @@ class Db:
             Louis
         '''
         with self.get_cursor() as cursor:
-            query = "SELECT * FROM `user` WHERE uid = %s LIMIT 1"
+            query = "SELECT * FROM `user` WHERE uid = %s AND active = 1 LIMIT 1"
             cursor.execute(query, [uid])
             result = cursor.fetchone()
 
@@ -205,7 +205,7 @@ class Db:
             Louis
         '''
         with self.get_cursor() as cursor:
-            query = "SELECT * FROM `user` WHERE email = %s LIMIT 1"
+            query = "SELECT * FROM `user` WHERE email = %s AND active = 1 LIMIT 1"
             cursor.execute(query, [email])
             result = cursor.fetchone()
 
@@ -218,7 +218,7 @@ class Db:
         '''
             Gibt eine Liste von Benutzern zurück. Wenn uid_list eine Liste (nicht None) ist, werden nur die Nutzer mit den uids der Liste zurückgegeben
         '''
-        query = "SELECT uid, email, firstname, lastname FROM user"
+        query = "SELECT uid, email, firstname, lastname FROM user WHERE active = 1 ORDER BY lastname, firstname"
         
         if uid_list is not None:
             id_str = ",".join([int(uid) for uid in uid_list])
@@ -254,8 +254,11 @@ class Db:
             with conn.cursor() as cursor:
                 query = "INSERT INTO projekt (name, beschreibung, plätze_min, plätze_max, klasse_min, klasse_max) VALUES (%s, %s, %s, %s, %s, %s)"
                 cursor.execute(query, [p.name, p.beschreibung, p.plaetze_min, p.plaetze_max, p.klasse_min, p.klasse_max])
+                pid = cursor.lastrowid
+                for o in p.organisatoren:
+                    cursor.execute("INSERT INTO leitet (pId, uId) VALUES (%s, %s)", (pid, o.uid))
                 conn.commit()
-                return cursor.lastrowid
+                return pid
         
     def add_choice(self, uid, pid1, pid2, pid3):
         '''
