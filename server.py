@@ -42,8 +42,11 @@ def inject_db():
 @app.get("/index.html")
 @login_required
 def projekte():
+    uid = get_current_user().uid
+    
     liste = db.get_projects()
-    return render_template('projekte.html', liste=liste)
+    has_choice = db.has_choice(uid)
+    return render_template('projekte.html', liste=liste, has_choice=has_choice)
 
 @app.get("/projekt.html")
 @login_required
@@ -60,16 +63,15 @@ def projekt():
 def wahl():
     uid = get_current_user().uid
     
-    if request.form.get("wahl1") is not None: 
+    if request.form.get("wahl1") is not None and not db.has_choice(uid): 
         pid1 = int(request.form.get("wahl1"))
         pid2 = int(request.form.get("wahl2"))
         pid3 = int(request.form.get("wahl3"))
     
         db.add_choice(uid, pid1, pid2, pid3)
     
-    return render_template('wahl.html')
-
-query = "SELECT name FROM projekt WHERE pId = %s"
+    choice = db.get_choice(uid)
+    return render_template('wahl.html', choice=choice)
 
 @app.get("/neu.html")
 @login_required

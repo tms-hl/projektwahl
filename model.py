@@ -46,7 +46,7 @@ class Db:
     def __init__(self, host, database, user, password, pool_size=5):
         # Initialisierung des Verbindungs-Pools
         self.pool = mysql.connector.pooling.MySQLConnectionPool(
-            pool_name="mypool",
+            pool_name=f"mypool_{id(self)}",
             pool_size=pool_size,
             host=host,
             user=user,
@@ -57,14 +57,17 @@ class Db:
     @contextmanager
     def get_cursor(self):
         """Erstellt einen Cursor für den Kontext-Manager"""
-        conn = self.get_connection()
+        conn = self.pool.get_connection()  # Direkt aus dem Pool holen
         conn.autocommit = True
-        cursor = conn.cursor(dictionary=True)
+        
         try:
-            yield cursor
+            cursor = conn.cursor(dictionary=True)
+            try:
+                yield cursor
+            finally:
+                cursor.close()
         finally:
-            cursor.close()
-            conn.close()  # Verbindung zurück in den Pool geben
+            conn.close()  # Verbindung sicher zurück in den Pool
     
     @contextmanager
     def get_connection(self):
@@ -72,8 +75,12 @@ class Db:
         conn = self.pool.get_connection()
         try:
             yield conn
+        except Exception as e:
+            conn.rollback()  # Bei Fehler: Transaktion zurückrollen
+            raise e
         finally:
-            conn.close()
+            if conn is not None:
+                conn.close()
     
     def get_project(self, pid):
         
@@ -138,7 +145,7 @@ class Db:
             Mats
         '''
         with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
-            query = "SELECT * FROM wählt JOIN projekt ON projekt.pid = wählt.pid WHERE uid = %s"
+            query = "SELECT * FROM wählt JOIN projekt ON projekt.pid = wählt.pid WHERE uid = %s ORDER BY no"
             cursor.execute(query, [uid])
             projects = []
             for row in cursor.fetchall():
@@ -268,10 +275,12 @@ class Db:
             Author:
             Max, Bendix
         '''
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        query = "INSERT INTO wählt (uid, pid) VALUES (%s, %s)"
-        cursor.execute(query, [uid, pid1])
-        cursor.execute(query, [uid, pid2])
-        cursor.execute(query, [uid, pid3])
-        conn.commit()
+        with self.get_connection() as conn:
+            with conn.cursor() as cursor:
+                query = "INSERT INTO wählt (uid, pid, no) VALUES (%s, %s, %s)"
+                cursor.executemany(query, [
+                    [uid, pid1, 1],
+                    [uid, pid2, 2],
+                    [uid, pid3, 3]
+                ])
+                conn.commit()

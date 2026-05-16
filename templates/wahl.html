@@ -2,20 +2,23 @@
 
 {% block content %}
 
-{# 
-<!--<h1>Wahl abgeschlossen</h1>
-<p>Vielen Dank für deine Wahl!</p>
-<p>Du hast diese Projekte gewählt:</p>
-<ol>
-    <li>Wahl 1</li>
-    <li>Wahl 2</li>
-    <li>Wahl 3</li>
-</ol>
-<a href="{{ url_for('projekte') }}">Zur Projektübersicht</a>
---> 
-#}
+{% if choice %}
 
-<h1>Noch nicht gewählt</h1>
-<p>Du hast noch keine Projekte gewählt.</p>
-<p>Gehe <a href="{{ url_for('projekte') }}">zur Projektübersicht</a> um die Projekte zu wählen.</p>
+    <h1>Wahl abgeschlossen</h1>
+    <p>Vielen Dank für deine Wahl!</p>
+    <p>Du hast diese Projekte gewählt:</p>
+    <ol>
+        {% for p in choice %}
+            <li><a href="{{ url_for('projekt', pid=p.pid) }}">{{p.name}}</a></li>
+        {% endfor %}
+    </ol>
+    <a href="{{ url_for('projekte') }}">Zur Projektübersicht</a>
+
+{% else %}
+
+    <h1>Noch nicht gewählt</h1>
+    <p>Du hast noch keine Projekte gewählt.</p>
+    <p>Gehe <a href="{{ url_for('projekte') }}">zur Projektübersicht</a> um die Projekte zu wählen.</p>
+
+{% endif %}
 {% endblock %}

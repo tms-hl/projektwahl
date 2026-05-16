@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const lastValidSelection = {};
 
     // 🔹 1. Initiale Auswahl setzen
+    
     rows.forEach((row, rowIndex) => {
         const radios = row.querySelectorAll("input[type='radio']");
 
@@ -21,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
-
+    
     // 🔹 2. Event-Listener
     const allRadios = document.querySelectorAll("input[type='radio']");
 

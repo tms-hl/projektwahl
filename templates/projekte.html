@@ -17,21 +17,30 @@
             <tr>
                 <td><a href="{{ url_for('projekt', pid=p.pid) }}">{{p.name}}</a></td>
                 <td>{{p.klasse_min}}-{{p.klasse_max}}</td>
-                <td><input type="radio" name="wahl1" value="{{p.pid}}"></td>
-                <td><input type="radio" name="wahl2" value="{{p.pid}}"></td>
-                <td><input type="radio" name="wahl3" value="{{p.pid}}"></td>
+                <td><input type="radio" name="wahl1" value="{{p.pid}}" {{ "disabled" if has_choice }}></td>
+                <td><input type="radio" name="wahl2" value="{{p.pid}}" {{ "disabled" if has_choice }}></td>
+                <td><input type="radio" name="wahl3" value="{{p.pid}}" {{ "disabled" if has_choice }}></td>
             </tr>
         {% endfor %}
     </table>
     <div class="wahl">
+        {% if has_choice %}
+        <div style="display:none">
+        {% endif %}
         <h2>Deine Auswahl:</h2>
         <ol>
             <li>Wahl 1</li>
             <li>Wahl 2</li>
             <li>Wahl 3</li>
         </ol>
-        <input type="submit" value="wählen" disabled>
-        <p><small>Die Projektwahl ist zum gegenwärtigen Zeitpunkt nicht möglich.</small></p>
+        {% if has_choice %}
+        </div>
+        <br>
+        {% endif %}
+        <input type="submit" value="wählen" {{ "disabled" if has_choice }}>
+        {% if has_choice %}
+            <small>Du hast bereits gewählt</small>
+        {% endif %}
     </div>
 </form>
 
