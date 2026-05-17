@@ -2,6 +2,10 @@
 
 {% block content %}
 
+{% if error %}
+<p style="color: red; font-weight: bold">Fehler: Es ist ein unbekannter Fehler aufgetreten. Deine Wahl wurde nicht gespeichert. Bitte versuche es erneut. Wenn es nach mehreren Versuchen nicht funktioniert, melde den Fehler an deine Klassenlehrkraft.</p>
+{% endif %}
+
 {% if choice %}
 
     <h1>Wahl abgeschlossen</h1>

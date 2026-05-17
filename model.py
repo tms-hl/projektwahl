@@ -19,6 +19,7 @@ class Schueler(Person):
     def __init__(self):
         super().__init__()
         self.klasse = None
+        self.stufe = None
 
 class Projekt:
     def __init__(self):
@@ -113,7 +114,7 @@ class Db:
                 
                 return p
 
-    def get_projects(self):
+    def get_projects(self, stufe=None):
         '''
             Gibt alle Projekte zurück
             
@@ -121,8 +122,13 @@ class Db:
             Max, Bendix
         '''
         with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
-            query = "SELECT * FROM projekt"
-            cursor.execute(query)
+            if stufe is None:
+                query = "SELECT * FROM projekt"
+                cursor.execute(query)
+            else:
+                query = "SELECT * FROM projekt WHERE %s >= klasse_min AND %s <= klasse_max"
+                cursor.execute(query, (stufe, stufe))
+            
             projects = []
             for row in cursor.fetchall():
                 p = Projekt()
@@ -195,6 +201,15 @@ class Db:
                 row = cursor.fetchone()
                 p = Schueler()
                 p.klasse = row['name']
+                if p.klasse.lower().startswith('q2'):
+                    p.stufe = 13
+                elif p.klasse.lower().startswith('q1'):
+                    p.stufe = 12
+                elif p.klasse.lower().startswith('e'):
+                    p.stufe = 11
+                else:
+                    p.stufe = int(p.klasse[0])
+                
             else:                               # Lehrer
                 p = Organisator()
 
@@ -267,7 +282,13 @@ class Db:
                     cursor.execute("INSERT INTO leitet (pId, uId) VALUES (%s, %s)", (pid, o.uid))
                 conn.commit()
                 return pid
-        
+    
+    def can_choice(self, pid, stufe):
+        with self.get_cursor() as cursor:
+            query = "SELECT 1 FROM projekt WHERE pid = %s AND %s >= klasse_min AND %s <= klasse_max LIMIT 1"
+            cursor.execute(query, (pid, stufe, stufe))
+            return cursor.fetchone() is not None
+            
     def add_choice(self, uid, pid1, pid2, pid3):
         '''
             Erstellt eine neue Wahl

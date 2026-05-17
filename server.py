@@ -42,10 +42,10 @@ def inject_db():
 @app.get("/index.html")
 @login_required
 def projekte():
-    uid = get_current_user().uid
-    
-    liste = db.get_projects()
-    has_choice = db.has_choice(uid)
+    user = get_current_user()
+    stufe = user.stufe if is_schueler() else None
+    liste = db.get_projects(stufe)
+    has_choice = db.has_choice(user.uid)
     return render_template('projekte.html', liste=liste, has_choice=has_choice)
 
 @app.get("/projekt.html")
@@ -61,17 +61,21 @@ def projekt():
 @app.post("/wahl.html")
 @login_required
 def wahl():
-    uid = get_current_user().uid
+    user = get_current_user()
+    error = False
     
-    if request.form.get("wahl1") is not None and not db.has_choice(uid): 
+    if request.form.get("wahl1") is not None:
         pid1 = int(request.form.get("wahl1"))
         pid2 = int(request.form.get("wahl2"))
         pid3 = int(request.form.get("wahl3"))
     
-        db.add_choice(uid, pid1, pid2, pid3)
+        if db.has_choice(user.uid) or not is_schueler() or not db.can_choice(pid1, user.stufe) or not db.can_choice(pid2, user.stufe) or not db.can_choice(pid3, user.stufe):
+            error = True
+        else:
+            db.add_choice(user.uid, pid1, pid2, pid3)
     
-    choice = db.get_choice(uid)
-    return render_template('wahl.html', choice=choice)
+    choice = db.get_choice(user.uid)
+    return render_template('wahl.html', choice=choice, error=error)
 
 @app.get("/neu.html")
 @login_required
