@@ -1,10 +1,8 @@
 import yaml
 import model
-from usertools import *
 
 from flask import Flask
-from flask import g, request, redirect, render_template
-from authlib.integrations.flask_client import OAuth
+from flask import request, redirect, render_template
 
 # Config laden
 with open("config.yaml") as stream:
@@ -13,20 +11,13 @@ with open("config.yaml") as stream:
 # Datenbank öffnen
 db = model.Db(config['db']['host'], config['db']['name'], config['db']['user'], config['db']['password'])
 
-# OAuth
-oauth = OAuth(app)
-provider = oauth.register(
-    name=config['oauth']['name'],
-    client_id=config['oauth']['client_id'],
-    client_secret=config['oauth']['client_secret'],
-    server_metadata_url=config['oauth']['server_metadata_url'],
-    client_kwargs=config['oauth']['client_kwargs'],
-)
+def get_current_user():
+    return model.User(1, "max.mustermann@tms-hl.org", "Max", "Mustermann")
 
 # App einrichten
 app = Flask(__name__)
 app.config['APPLICATION_ROOT'] = '/'
-app.secret_key = config['secret_key']
+app.secret_key = 'secret' #config['secret_key']
 
 @app.context_processor
 def context():
@@ -39,13 +30,11 @@ def inject_db():
 # Anfragen bearbeiten
 @app.get("/")
 @app.get("/index.html")
-@login_required
 def projekte():
-    liste = db.get_projects()
-    return render_template('projekte.html', liste=liste)
+    #liste = db.get_projects()
+    return "OK" #render_template('projekte.html', liste=liste)
 
 @app.get("/projekt.html")
-@login_required
 def projekt():
    pid = request.args.get("pid")
    
@@ -55,7 +44,6 @@ def projekt():
    
 @app.get("/wahl.html")
 @app.post("/wahl.html")
-@login_required
 def wahl():
     uid = get_current_user().uid
     
@@ -71,7 +59,6 @@ def wahl():
 query = "SELECT name FROM projekt WHERE pId = %s"
 
 @app.get("/neu.html")
-@login_required
 def neu():
     if not is_organisator():
         return "Zugriff verweigert", 402
@@ -80,7 +67,6 @@ def neu():
     return render_template('neu.html', users=users)
 
 @app.post("/projektneu.html")
-@login_required
 def projektneu():
     if not is_organisator():
         return "Zugriff verweigert", 402
@@ -98,36 +84,6 @@ def projektneu():
     pid = db.add_project(p)
     return render_template('projektneu.html', pid=pid)
 
-@app.route("/login")
-def login():
-    next = request.args.get("next")
-    if next is None:
-        next = url_for("projekte")
-    return provider.authorize_redirect(url_for("callback", next=next, _external=True))
-
-
-@app.route("/callback")
-def callback():
-    token = provider.authorize_access_token()
-    email = token["userinfo"]["email"]
-    g.user = g.db.get_user_by_email(email)
-    
-    if g.user is None:
-        return render_template("access_denied.html"), 401
-    
-    session["uid"] = g.user.uid
-    
-    next = request.args.get("next")
-    if next is None:
-        next = url_for("projekte")
-    return redirect(next)
-
-
-@app.route("/logout")
-def logout():
-    session.pop("uid", None)
-    return "Ausgeloggt"
-    
 """
 Dies steht immer am Ende. Bitte nicht löschen
 """
