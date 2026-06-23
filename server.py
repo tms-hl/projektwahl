@@ -1,8 +1,9 @@
 import yaml
 import model
 
-from flask import Flask
-from flask import request, redirect, render_template
+from flask import Flask, Blueprint, url_for
+from flask import g, request, redirect, render_template
+from authlib.integrations.flask_client import OAuth
 
 # Config laden
 with open("config.yaml") as stream:
@@ -17,7 +18,8 @@ def get_current_user():
 # App einrichten
 app = Flask(__name__)
 app.config['APPLICATION_ROOT'] = '/'
-app.secret_key = 'secret' #config['secret_key']
+app.config['PREFERRED_URL_SCHEME'] = "https"
+app.secret_key = config['secret_key']
 
 @app.context_processor
 def context():
@@ -31,8 +33,11 @@ def inject_db():
 @app.get("/")
 @app.get("/index.html")
 def projekte():
-    #liste = db.get_projects()
-    return "OK" #render_template('projekte.html', liste=liste)
+    user = get_current_user()
+    stufe = user.stufe if is_schueler() else None
+    liste = db.get_projects(stufe)
+    has_choice = db.has_choice(user.uid)
+    return render_template('projekte.html', liste=liste, has_choice=has_choice)
 
 @app.get("/projekt.html")
 def projekt():
@@ -45,18 +50,21 @@ def projekt():
 @app.get("/wahl.html")
 @app.post("/wahl.html")
 def wahl():
-    uid = get_current_user().uid
+    user = get_current_user()
+    error = False
     
-    if request.form.get("wahl1") is not None: 
+    if request.form.get("wahl1") is not None:
         pid1 = int(request.form.get("wahl1"))
         pid2 = int(request.form.get("wahl2"))
         pid3 = int(request.form.get("wahl3"))
     
-        db.add_choice(uid, pid1, pid2, pid3)
+        if db.has_choice(user.uid) or not is_schueler() or not db.can_choice(pid1, user.stufe) or not db.can_choice(pid2, user.stufe) or not db.can_choice(pid3, user.stufe):
+            error = True
+        else:
+            db.add_choice(user.uid, pid1, pid2, pid3)
     
-    return render_template('wahl.html')
-
-query = "SELECT name FROM projekt WHERE pId = %s"
+    choice = db.get_choice(user.uid)
+    return render_template('wahl.html', choice=choice, error=error)
 
 @app.get("/neu.html")
 def neu():
@@ -79,7 +87,7 @@ def projektneu():
     p.klasse_min = int(request.form['klasse_min'])
     p.klasse_max = int(request.form['klasse_max'])
     
-    p.organisatoren = [int(uid) for uid in request.form.getlist('organisatoren[]')]
+    p.organisatoren = [model.Person(int(uid)) for uid in request.form.getlist('organisatoren[]')]
     
     pid = db.add_project(p)
     return render_template('projektneu.html', pid=pid)

@@ -19,6 +19,7 @@ class Schueler(Person):
     def __init__(self):
         super().__init__()
         self.klasse = None
+        self.stufe = None
 
 class Projekt:
     def __init__(self):
@@ -46,7 +47,7 @@ class Db:
     def __init__(self, host, database, user, password, pool_size=5):
         # Initialisierung des Verbindungs-Pools
         self.pool = mysql.connector.pooling.MySQLConnectionPool(
-            pool_name="mypool",
+            pool_name=f"mypool_{id(self)}",
             pool_size=pool_size,
             host=host,
             user=user,
@@ -57,14 +58,17 @@ class Db:
     @contextmanager
     def get_cursor(self):
         """Erstellt einen Cursor für den Kontext-Manager"""
-        conn = self.get_connection()
+        conn = self.pool.get_connection()  # Direkt aus dem Pool holen
         conn.autocommit = True
-        cursor = conn.cursor(dictionary=True)
+        
         try:
-            yield cursor
+            cursor = conn.cursor(dictionary=True)
+            try:
+                yield cursor
+            finally:
+                cursor.close()
         finally:
-            cursor.close()
-            conn.close()  # Verbindung zurück in den Pool geben
+            conn.close()  # Verbindung sicher zurück in den Pool
     
     @contextmanager
     def get_connection(self):
@@ -72,8 +76,12 @@ class Db:
         conn = self.pool.get_connection()
         try:
             yield conn
+        except Exception as e:
+            conn.rollback()  # Bei Fehler: Transaktion zurückrollen
+            raise e
         finally:
-            conn.close()
+            if conn is not None:
+                conn.close()
     
     def get_project(self, pid):
         
@@ -106,7 +114,7 @@ class Db:
                 
                 return p
 
-    def get_projects(self):
+    def get_projects(self, stufe=None):
         '''
             Gibt alle Projekte zurück
             
@@ -114,8 +122,13 @@ class Db:
             Max, Bendix
         '''
         with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
-            query = "SELECT * FROM projekt"
-            cursor.execute(query)
+            if stufe is None:
+                query = "SELECT * FROM projekt"
+                cursor.execute(query)
+            else:
+                query = "SELECT * FROM projekt WHERE %s >= klasse_min AND %s <= klasse_max"
+                cursor.execute(query, (stufe, stufe))
+            
             projects = []
             for row in cursor.fetchall():
                 p = Projekt()
@@ -138,7 +151,7 @@ class Db:
             Mats
         '''
         with self.get_cursor() as cursor:  # Verbindung im 'with'-Block
-            query = "SELECT * FROM wählt JOIN projekt ON projekt.pid = wählt.pid WHERE uid = %s"
+            query = "SELECT * FROM wählt JOIN projekt ON projekt.pid = wählt.pid WHERE uid = %s ORDER BY no"
             cursor.execute(query, [uid])
             projects = []
             for row in cursor.fetchall():
@@ -168,7 +181,7 @@ class Db:
             Louis
         '''
         with self.get_cursor() as cursor:
-            query = "SELECT * FROM `user` WHERE uid = %s LIMIT 1"
+            query = "SELECT * FROM `user` WHERE uid = %s AND active = 1 LIMIT 1"
             cursor.execute(query, [uid])
             result = cursor.fetchone()
 
@@ -188,6 +201,15 @@ class Db:
                 row = cursor.fetchone()
                 p = Schueler()
                 p.klasse = row['name']
+                if p.klasse.lower().startswith('q2'):
+                    p.stufe = 13
+                elif p.klasse.lower().startswith('q1'):
+                    p.stufe = 12
+                elif p.klasse.lower().startswith('e'):
+                    p.stufe = 11
+                else:
+                    p.stufe = int(p.klasse[0])
+                
             else:                               # Lehrer
                 p = Organisator()
 
@@ -206,7 +228,7 @@ class Db:
             Louis
         '''
         with self.get_cursor() as cursor:
-            query = "SELECT * FROM `user` WHERE email = %s LIMIT 1"
+            query = "SELECT * FROM `user` WHERE email = %s AND active = 1 LIMIT 1"
             cursor.execute(query, [email])
             result = cursor.fetchone()
 
@@ -219,7 +241,7 @@ class Db:
         '''
             Gibt eine Liste von Benutzern zurück. Wenn uid_list eine Liste (nicht None) ist, werden nur die Nutzer mit den uids der Liste zurückgegeben
         '''
-        query = "SELECT uid, email, firstname, lastname FROM user"
+        query = "SELECT uid, email, firstname, lastname FROM user WHERE active = 1 ORDER BY lastname, firstname"
         
         if uid_list is not None:
             id_str = ",".join([int(uid) for uid in uid_list])
@@ -255,9 +277,18 @@ class Db:
             with conn.cursor() as cursor:
                 query = "INSERT INTO projekt (name, beschreibung, plätze_min, plätze_max, klasse_min, klasse_max) VALUES (%s, %s, %s, %s, %s, %s)"
                 cursor.execute(query, [p.name, p.beschreibung, p.plaetze_min, p.plaetze_max, p.klasse_min, p.klasse_max])
+                pid = cursor.lastrowid
+                for o in p.organisatoren:
+                    cursor.execute("INSERT INTO leitet (pId, uId) VALUES (%s, %s)", (pid, o.uid))
                 conn.commit()
-                return cursor.lastrowid
-        
+                return pid
+    
+    def can_choice(self, pid, stufe):
+        with self.get_cursor() as cursor:
+            query = "SELECT 1 FROM projekt WHERE pid = %s AND %s >= klasse_min AND %s <= klasse_max LIMIT 1"
+            cursor.execute(query, (pid, stufe, stufe))
+            return cursor.fetchone() is not None
+            
     def add_choice(self, uid, pid1, pid2, pid3):
         '''
             Erstellt eine neue Wahl
@@ -265,10 +296,12 @@ class Db:
             Author:
             Max, Bendix
         '''
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        query = "INSERT INTO wählt (uid, pid) VALUES (%s, %s)"
-        cursor.execute(query, [uid, pid1])
-        cursor.execute(query, [uid, pid2])
-        cursor.execute(query, [uid, pid3])
-        conn.commit()
+        with self.get_connection() as conn:
+            with conn.cursor() as cursor:
+                query = "INSERT INTO wählt (uid, pid, no) VALUES (%s, %s, %s)"
+                cursor.executemany(query, [
+                    [uid, pid1, 1],
+                    [uid, pid2, 2],
+                    [uid, pid3, 3]
+                ])
+                conn.commit()
